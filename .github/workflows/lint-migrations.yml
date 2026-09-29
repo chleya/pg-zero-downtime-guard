@@ -1,0 +1,17 @@
+name: Lint PostgreSQL Migrations
+on:
+  pull_request:
+    paths: ['migrations/**/*.sql', 'src/analyzer.js', 'action.yml']
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./
+        with:
+          path: migrations
+          fail-on-warning: 'true'
