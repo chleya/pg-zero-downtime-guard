@@ -10,15 +10,16 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v4
-      - name: Create test migrations
+      - name: Create safe migration
         run: |
           mkdir -p migrations
           cat > migrations/001_add_users.sql <<'SQL'
-          CREATE INDEX idx_users_email ON users(email);
-          ALTER TABLE users ADD COLUMN created_at TIMESTAMPTZ DEFAULT now();
+          SET LOCAL lock_timeout = '2s';
+          CREATE INDEX CONCURRENTLY idx_users_email ON users(email);
+          ALTER TABLE users ADD COLUMN created_at TIMESTAMPTZ;
           SQL
-      - name: Run Guard
+      - name: Run Guard (should pass)
         uses: chleya/pg-zero-downtime-guard@main
         with:
           path: migrations
-          fail-on-warning: 'false'
+          fail-on-warning: 'true'
